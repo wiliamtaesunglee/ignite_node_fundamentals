@@ -1,37 +1,31 @@
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
-app.get('/', (request, response) => {
-  return response.send({ message: "Hello World" });
-});
+const customers = [];
 
-app.get('/courses', (request, response) => {
-  const { query } = request;
-  console.warn(query);
-  return response.json(["course one", "course two", "course three"]);
-});
+app.post('/account', (request, response) => {
+  const { cpf, name } = request.body;
 
-app.post('/courses', (request, response) => {
-  const { body } = request;
-  console.warn(body);
-  return response.json(["course one", "course two", "course three"]);
-});
+  const customerAlreadyExist = customers.some(
+    (customer) => customer.cpf === cpf
+  );
 
-app.put('/courses/:id', (request, response) => {
-  const { params } = request;
-  console.warn(params);
-  return response.json(["course six", "course two", "course three"]);
-});
+  if (customerAlreadyExist) {
+    return response.status(400).json({ error: "Customer already exists!" });
+  }
 
-app.patch('/courses/:id', (request, response) => {
-  return response.json(["course one", "course seven", "course three"]);
-});
+  customers.push({
+    cpf,
+    name,
+    id: uuidv4(),
+    statement: []
+  });
 
-app.delete('/courses/:id', (request, response) => {
-  return response.json(["course one", "course two"]);
+  return response.status(201).send();
 });
 
 app.listen(3333);
